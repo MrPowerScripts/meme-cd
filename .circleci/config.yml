@@ -1,0 +1,63 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:2.7-stretch
+    working_directory: ~/repo
+    environment:
+      - TITLE: "My Meme"
+      - SUBREDDIT: "mrpowerscripts"
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+      - run:
+          name: install dependencies
+          command: |
+            virtualenv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+      - run:
+          name: Meme Time
+          shell: ./venv/bin/python
+          command: |
+            import os, datetime
+            import praw
+            from imgurpython import ImgurClient
+            
+            imgur = ImgurClient(os.environ['IMGUR_CLIENT_ID'],
+                                  os.environ['IMGUR_CLIENT_SECRET'])
+                                  
+            reddit = praw.Reddit(client_id=os.environ['REDDIT_CLIENT_ID'],
+                                 client_secret=os.environ['REDDIT_CLIENT_SECRET'],
+                                 user_agent='meme-cd',
+                                 username=os.environ['REDDIT_USERNAME'],
+                                 password=os.environ['REDDIT_PASSWORD'])
+
+            imgur_config = {
+              'name':  'Meme',
+              'title': os.environ['TITLE'],
+              'description': 'My meme uploaded on {0}'.format(datetime.datetime.now())
+            }
+            
+            try:
+              imgur_response = imgur.upload_from_path(os.path.join(os.getcwd(), 'meme.png'),
+                config=imgur_config, anon=False)
+            except Exception as e:
+              raise e
+              
+            post_config = {
+              'title': os.environ['TITLE'],
+              'resubmit': True,
+              'url': imgur_response['link']
+            }
+            
+            try:
+              reddit.subreddit(os.environ['SUBREDDIT']).submit(**post_config)
+            except Exception as e:
+              raise e
