@@ -22,6 +22,7 @@ The Meme image is in the root of the repository as `meme.png`. All of the magic 
 Imgur, Reddit, and Github accounts are of course required. Also registering an application on Imgur and Reddit so that we can use their API.
 
 Registering an Imgur app can be done here https://api.imgur.com/oauth2/addclient
+
 Registering a Reddit app can be done here https://www.reddit.com/prefs/apps/
 
 Once you've registered your apps you'll be given a client_id and client_secret. These details
