@@ -1,3 +1,14 @@
+workflows:
+  version: 2
+  deploy_meme:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
+
 version: 2
 jobs:
   build:
@@ -12,6 +23,7 @@ jobs:
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "requirements.txt" }}
+          - v1-dependencies-
       - run:
           name: install dependencies
           command: |
@@ -27,12 +39,34 @@ jobs:
           shell: ./venv/bin/python
           command: |
             import os, datetime
+            import imghdr
             import praw
+            from PIL import Image
             from imgurpython import ImgurClient
-            
+
+            image_path = os.path.join(os.getcwd(), 'meme.png')
+            image = Image.open(image_path)
+            image_width = image.size[0]
+            image_height = image.size[1]
+
+            if not imghdr.what(image_path) in ['png', 'jpeg']:
+              raise Exception('Not a valid image type (png or jpeg)')
+
+            if image_width < 500:
+              raise Exception('What is this a meme for ants? Width too small')
+
+            if image_width > 1000:
+              raise Exception('Image width is too large!')
+
+            if image_height < 500:
+              raise Exception('What is this a meme for ants? Height is too small')
+
+            if image_height > 1000:
+              raise Exception('Image height is too large!')
+
             imgur = ImgurClient(os.environ['IMGUR_CLIENT_ID'],
                                   os.environ['IMGUR_CLIENT_SECRET'])
-                                  
+
             reddit = praw.Reddit(client_id=os.environ['REDDIT_CLIENT_ID'],
                                  client_secret=os.environ['REDDIT_CLIENT_SECRET'],
                                  user_agent='meme-cd',
@@ -44,20 +78,23 @@ jobs:
               'title': os.environ['TITLE'],
               'description': 'My meme uploaded on {0}'.format(datetime.datetime.now())
             }
-            
+
             try:
-              imgur_response = imgur.upload_from_path(os.path.join(os.getcwd(), 'meme.png'),
+              imgur_response = imgur.upload_from_path(image_path,
                 config=imgur_config, anon=False)
             except Exception as e:
               raise e
-              
+
             post_config = {
               'title': os.environ['TITLE'],
               'resubmit': True,
               'url': imgur_response['link']
             }
-            
+
             try:
-              reddit.subreddit(os.environ['SUBREDDIT']).submit(**post_config)
+              post = reddit.subreddit(os.environ['SUBREDDIT']).submit(**post_config)
+              post.reply("""
+              This meme was delivered fresh with [continuous meme delivery](https://github.com/mrpowerscripts/meme-cd)
+              """)
             except Exception as e:
               raise e
