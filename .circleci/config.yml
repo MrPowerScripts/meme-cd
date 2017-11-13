@@ -34,6 +34,7 @@ jobs:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
+      - run: echo "${CIRCLE_COMPARE_URL%/*/*}/tree/${CIRCLE_TAG}/meme.png" > MEME_URL
       - run:
           name: Meme Time
           shell: ./venv/bin/python
@@ -91,10 +92,15 @@ jobs:
               'url': imgur_response['link']
             }
 
+            with open('MEME_URL', 'r') as meme_url_file:
+              meme_url=meme_url_file.read()
+
             try:
               post = reddit.subreddit(os.environ['SUBREDDIT']).submit(**post_config)
               post.reply("""
               This meme was delivered fresh with [continuous meme delivery](https://github.com/mrpowerscripts/meme-cd)
-              """)
+
+              [View this Meme on GitHub]({meme_url})
+              """.format(meme_url=meme_url))
             except Exception as e:
               raise e
