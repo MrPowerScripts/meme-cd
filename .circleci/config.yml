@@ -14,7 +14,6 @@ jobs:
   build:
     docker:
       - image: circleci/python:2.7-stretch
-    working_directory: ~/repo
     environment:
       - TITLE: "My Meme"
       - SUBREDDIT: "mrpowerscripts"
