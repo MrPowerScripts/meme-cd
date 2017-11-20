@@ -17,7 +17,7 @@ This repository uses it to upload a Meme to Reddit.
 There are many CI/CD tools available to use. Travis, Jenkins, Drone.io, Codeship. For this example we will
 use CircleCI.
 
-You can view the builds run by this repository [here on the CircleCI website](https://circleci.com/gh/mrpowerscripts/meme-cd).
+You can view the builds run by this repository [here on the CircleCI website](https://circleci.com/gh/MrPowerScripts/meme-cd).
 
 The Meme image is in the root of the repository as `meme.png`. All of the magic occurs inside of the config.yml. It contains the instructions that perform some basic testing on the image, uploading that image to Imgur, and then posting it as a link post to a subreddit.
 
