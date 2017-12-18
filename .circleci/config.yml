@@ -15,7 +15,7 @@ jobs:
     docker:
       - image: circleci/python:2.7-stretch
     environment:
-      - TITLE: "Stackoverflow suffered an injection attack today. Payload was apparently Viagra. Next update in 4 hours."
+      - TITLE: "I made it to the StackOverflow final boss!! I don't think I have an answer this..."
       - SUBREDDIT: "programmerhumor"
     steps:
       - checkout
